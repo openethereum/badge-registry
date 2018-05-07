@@ -87,7 +87,7 @@ contract BadgeReg is Owned {
 	function badgeCount() view public returns (uint) { return badges.length; }
 
 	function badge(uint _id) view public returns (address addr, bytes32 name, address owner) {
-		var t = badges[_id];
+		Badge storage t = badges[_id];
 		addr = t.addr;
 		name = t.name;
 		owner = t.owner;
@@ -95,14 +95,14 @@ contract BadgeReg is Owned {
 
 	function fromAddress(address _addr) view public returns (uint id, bytes32 name, address owner) {
 		id = mapFromAddress[_addr] - 1;
-		var t = badges[id];
+		Badge storage t = badges[id];
 		name = t.name;
 		owner = t.owner;
 	}
 
 	function fromName(bytes32 _name) view public returns (uint id, address addr, address owner) {
 		id = mapFromName[_name] - 1;
-		var t = badges[id];
+		Badge storage t = badges[id];
 		addr = t.addr;
 		owner = t.owner;
 	}
@@ -112,7 +112,7 @@ contract BadgeReg is Owned {
 	}
 
 	function setAddress(uint _id, address _newAddr) onlyBadgeOwner(_id) whenAddressFree(_newAddr) public {
-		var oldAddr = badges[_id].addr;
+		address oldAddr = badges[_id].addr;
 		badges[_id].addr = _newAddr;
 		mapFromAddress[oldAddr] = 0;
 		mapFromAddress[_newAddr] = _id;
@@ -125,7 +125,7 @@ contract BadgeReg is Owned {
 	}
 
 	function drain() onlyOwner public {
-		msg.sender.transfer(this.balance);
+		msg.sender.transfer(address(this).balance);
 	}
 
 	mapping (address => uint) mapFromAddress;
