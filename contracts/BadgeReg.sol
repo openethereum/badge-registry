@@ -16,7 +16,7 @@
 
 pragma solidity ^0.4.17;
 
-import "Owned.sol";
+import "./Owned.sol";
 
 
 contract BadgeReg is Owned {
