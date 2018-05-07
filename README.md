@@ -7,3 +7,5 @@
 [travis-url]: https://travis-ci.org/parity-contracts/badge-registry
 [coveralls-image]: https://coveralls.io/repos/github/parity-contracts/badge-registry/badge.svg?branch=master
 [coveralls-url]: https://coveralls.io/github/parity-contracts/badge-registry?branch=master
+
+Certify badges to accounts and wallets.
