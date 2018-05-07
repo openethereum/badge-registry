@@ -25,7 +25,7 @@ contract Owned {
 
 	event NewOwner(address indexed old, address indexed current);
 
-	function setOwner(address _new) only_owner public {
+	function setOwner(address _new) onlyOwner public {
 		emit NewOwner(owner, _new);
 		owner = _new;
 	}

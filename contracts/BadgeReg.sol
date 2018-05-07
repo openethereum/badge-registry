@@ -124,7 +124,7 @@ contract BadgeReg is Owned {
 		emit MetaChanged(_id, _key, _value);
 	}
 
-	function drain() only_owner public {
+	function drain() onlyOwner public {
 		msg.sender.transfer(this.balance);
 	}
 
