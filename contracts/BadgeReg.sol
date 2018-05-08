@@ -66,7 +66,12 @@ contract BadgeReg is Owned {
 		payable whenFeePaid whenAddressFree(_addr) whenNameFree(_name)
 		public returns (bool)
 	{
-		badges.push(Badge(_addr, _name, _owner, false));
+		badges.push(Badge({
+			addr: _addr,
+			name: _name,
+			owner: _owner,
+			deleted: false
+		}));
 		mapFromAddress[_addr] = badges.length;
 		mapFromName[_name] = badges.length;
 		badgeCount = badgeCount + 1;
