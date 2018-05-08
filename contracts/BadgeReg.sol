@@ -24,32 +24,32 @@ contract BadgeReg is Owned {
 		address addr;
 		bytes32 name;
 		address owner;
+		bool deleted;
 		mapping (bytes32 => bytes32) meta;
 	}
 
 	modifier whenFeePaid {
-		if (msg.value < fee)
-			return;
+		require(msg.value >= fee);
 		_;
 	}
 	modifier whenAddressFree(address _addr) {
-		if (mapFromAddress[_addr] != 0)
-			return;
+		require(mapFromAddress[_addr] == 0);
 		_;
 	}
 	modifier whenNameFree(bytes32 _name) {
-		if (mapFromName[_name] != 0)
-			return;
+		require(mapFromName[_name] == 0);
 		_;
 	}
 	modifier whenHasName(bytes32 _name) {
-		if (mapFromName[_name] == 0)
-			return;
+		require(mapFromName[_name] != 0);
+		_;
+	}
+	modifier whenBadge(uint _id) {
+		require(!badges[_id].deleted);
 		_;
 	}
 	modifier onlyBadgeOwner(uint _id) {
-		if (badges[_id].owner != msg.sender)
-			return;
+		require(badges[_id].owner == msg.sender);
 		_;
 	}
 
@@ -66,9 +66,10 @@ contract BadgeReg is Owned {
 		payable whenFeePaid whenAddressFree(_addr) whenNameFree(_name)
 		public returns (bool)
 	{
-		badges.push(Badge(_addr, _name, _owner));
+		badges.push(Badge(_addr, _name, _owner, false));
 		mapFromAddress[_addr] = badges.length;
 		mapFromName[_name] = badges.length;
+		badgeCount = badgeCount + 1;
 		emit Registered(_name, badges.length - 1, _addr);
 		return true;
 	}
@@ -77,16 +78,15 @@ contract BadgeReg is Owned {
 		emit Unregistered(badges[_id].name, _id);
 		delete mapFromAddress[badges[_id].addr];
 		delete mapFromName[badges[_id].name];
-		delete badges[_id];
+		badges[_id].deleted = true;
+		badgeCount = badgeCount - 1;
 	}
 
 	function setFee(uint _fee) onlyOwner public {
 		fee = _fee;
 	}
 
-	function badgeCount() view public returns (uint) { return badges.length; }
-
-	function badge(uint _id) view public returns (address addr, bytes32 name, address owner) {
+	function badge(uint _id) whenBadge(_id) view public returns (address addr, bytes32 name, address owner) {
 		Badge storage t = badges[_id];
 		addr = t.addr;
 		name = t.name;
@@ -96,6 +96,7 @@ contract BadgeReg is Owned {
 	function fromAddress(address _addr) view public returns (uint id, bytes32 name, address owner) {
 		id = mapFromAddress[_addr] - 1;
 		Badge storage t = badges[id];
+		require(!t.deleted);
 		name = t.name;
 		owner = t.owner;
 	}
@@ -103,15 +104,16 @@ contract BadgeReg is Owned {
 	function fromName(bytes32 _name) view public returns (uint id, address addr, address owner) {
 		id = mapFromName[_name] - 1;
 		Badge storage t = badges[id];
+		require(!t.deleted);
 		addr = t.addr;
 		owner = t.owner;
 	}
 
-	function meta(uint _id, bytes32 _key) view public returns (bytes32) {
+	function meta(uint _id, bytes32 _key) whenBadge(_id) view public returns (bytes32) {
 		return badges[_id].meta[_key];
 	}
 
-	function setAddress(uint _id, address _newAddr) onlyBadgeOwner(_id) whenAddressFree(_newAddr) public {
+	function setAddress(uint _id, address _newAddr) whenBadge(_id) onlyBadgeOwner(_id) whenAddressFree(_newAddr) public {
 		address oldAddr = badges[_id].addr;
 		badges[_id].addr = _newAddr;
 		mapFromAddress[oldAddr] = 0;
@@ -119,7 +121,7 @@ contract BadgeReg is Owned {
 		emit AddressChanged(_id, _newAddr);
 	}
 
-	function setMeta(uint _id, bytes32 _key, bytes32 _value) onlyBadgeOwner(_id) public {
+	function setMeta(uint _id, bytes32 _key, bytes32 _value) whenBadge(_id) onlyBadgeOwner(_id) public {
 		badges[_id].meta[_key] = _value;
 		emit MetaChanged(_id, _key, _value);
 	}
@@ -131,5 +133,6 @@ contract BadgeReg is Owned {
 	mapping (address => uint) mapFromAddress;
 	mapping (bytes32 => uint) mapFromName;
 	Badge[] badges;
+	uint public badgeCount = 0;
 	uint public fee = 1 ether;
 }
