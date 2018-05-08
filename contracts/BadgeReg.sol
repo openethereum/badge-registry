@@ -79,7 +79,7 @@ contract BadgeReg is Owned {
 		return true;
 	}
 
-	function unregister(uint _id) onlyOwner public {
+	function unregister(uint _id) whenBadge(_id) onlyOwner public {
 		emit Unregistered(badges[_id].name, _id);
 		delete mapFromAddress[badges[_id].addr];
 		delete mapFromName[badges[_id].name];
