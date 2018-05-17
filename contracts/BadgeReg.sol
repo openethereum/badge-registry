@@ -53,10 +53,6 @@ contract BadgeReg is Owned {
 		require(mapFromName[_name] == 0);
 		_;
 	}
-	modifier whenHasName(bytes32 _name) {
-		require(mapFromName[_name] != 0);
-		_;
-	}
 
 	modifier whenBadge(uint _id) {
 		require(!badges[_id].deleted);
