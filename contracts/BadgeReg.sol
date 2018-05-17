@@ -112,6 +112,35 @@ contract BadgeReg is Owned {
 		fee = _fee;
 	}
 
+	function setAddress(uint _id, address _newAddr)
+		public
+		whenBadge(_id)
+		onlyBadgeOwner(_id)
+		whenAddressFree(_newAddr)
+	{
+		address oldAddr = badges[_id].addr;
+		badges[_id].addr = _newAddr;
+		mapFromAddress[oldAddr] = 0;
+		mapFromAddress[_newAddr] = _id;
+		emit AddressChanged(_id, _newAddr);
+	}
+
+	function setMeta(uint _id, bytes32 _key, bytes32 _value)
+		public
+		whenBadge(_id)
+		onlyBadgeOwner(_id)
+	{
+		badges[_id].meta[_key] = _value;
+		emit MetaChanged(_id, _key, _value);
+	}
+
+	function drain()
+		public
+		onlyOwner
+	{
+		msg.sender.transfer(address(this).balance);
+	}
+
 	function badge(uint _id)
 		public
 		view
@@ -155,34 +184,5 @@ contract BadgeReg is Owned {
 		returns (bytes32)
 	{
 		return badges[_id].meta[_key];
-	}
-
-	function setAddress(uint _id, address _newAddr)
-		public
-		whenBadge(_id)
-		onlyBadgeOwner(_id)
-		whenAddressFree(_newAddr)
-	{
-		address oldAddr = badges[_id].addr;
-		badges[_id].addr = _newAddr;
-		mapFromAddress[oldAddr] = 0;
-		mapFromAddress[_newAddr] = _id;
-		emit AddressChanged(_id, _newAddr);
-	}
-
-	function setMeta(uint _id, bytes32 _key, bytes32 _value)
-		public
-		whenBadge(_id)
-		onlyBadgeOwner(_id)
-	{
-		badges[_id].meta[_key] = _value;
-		emit MetaChanged(_id, _key, _value);
-	}
-
-	function drain()
-		public
-		onlyOwner
-	{
-		msg.sender.transfer(address(this).balance);
 	}
 }
