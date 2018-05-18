@@ -121,7 +121,7 @@ contract BadgeReg is Owned {
 		address oldAddr = badges[_id].addr;
 		badges[_id].addr = _newAddr;
 		mapFromAddress[oldAddr] = 0;
-		mapFromAddress[_newAddr] = _id;
+		mapFromAddress[_newAddr] = _id + 1;
 		emit AddressChanged(_id, _newAddr);
 	}
 
