@@ -88,7 +88,7 @@ contract("BadgeReg", accounts => {
     // badge should no longer be accessible through old address
     await assertThrowsAsync(
       () => badgeReg.fromAddress(address),
-      "invalid opcode",
+      "revert",
     );
 
     // new address is the current badge address so the request should fail since the address is
@@ -286,16 +286,31 @@ contract("BadgeReg", accounts => {
 
     await assertThrowsAsync(
       () => badgeReg.fromAddress(address),
-      "invalid opcode",
+      "revert",
     );
 
     await assertThrowsAsync(
       () => badgeReg.fromName(name),
-      "invalid opcode",
+      "revert",
     );
 
     await assertThrowsAsync(
       () => badgeReg.meta(id, "key"),
+      "revert",
+    );
+
+    await assertThrowsAsync(
+      () => badgeReg.unregister(id, { from: accounts[1] }),
+      "revert",
+    );
+
+    await assertThrowsAsync(
+      () => badgeReg.setAddress(id, accounts[1], { from: owner }),
+      "revert",
+    );
+
+    await assertThrowsAsync(
+      () => badgeReg.setMeta(id, "key", "value", { from: owner }),
       "revert",
     );
   });

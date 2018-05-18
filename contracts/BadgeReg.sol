@@ -158,9 +158,10 @@ contract BadgeReg is Owned {
 		view
 		returns (uint id, bytes32 name, address owner)
 	{
-		id = mapFromAddress[_addr] - 1;
+		id = mapFromAddress[_addr];
+		require(id > 0);
+		id = id - 1;
 		Badge storage b = badges[id];
-		require(!b.deleted);
 		name = b.name;
 		owner = b.owner;
 	}
@@ -170,9 +171,10 @@ contract BadgeReg is Owned {
 		view
 		returns (uint id, address addr, address owner)
 	{
-		id = mapFromName[_name] - 1;
+		id = mapFromName[_name];
+		require(id > 0);
+		id = id - 1;
 		Badge storage b = badges[id];
-		require(!b.deleted);
 		addr = b.addr;
 		owner = b.owner;
 	}
