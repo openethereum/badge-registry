@@ -65,11 +65,106 @@ contract BadgeReg is Owned {
 	}
 
 	function register(address _addr, bytes32 _name)
-		public
+		external
 		payable
 		returns (bool)
 	{
 		return registerAs(_addr, _name, msg.sender);
+	}
+
+	function unregister(uint _id)
+		external
+		onlyOwner
+		whenBadge(_id)
+	{
+		emit Unregistered(badges[_id].name, _id);
+		delete mapFromAddress[badges[_id].addr];
+		delete mapFromName[badges[_id].name];
+		badges[_id].deleted = true;
+		badgeCount = badgeCount - 1;
+	}
+
+	function setFee(uint _fee)
+		external
+		onlyOwner
+	{
+		fee = _fee;
+	}
+
+	function setAddress(uint _id, address _newAddr)
+		external
+		whenBadge(_id)
+		onlyBadgeOwner(_id)
+		whenAddressFree(_newAddr)
+	{
+		address oldAddr = badges[_id].addr;
+		badges[_id].addr = _newAddr;
+		mapFromAddress[oldAddr] = 0;
+		mapFromAddress[_newAddr] = _id + 1;
+		emit AddressChanged(_id, _newAddr);
+	}
+
+	function setMeta(uint _id, bytes32 _key, bytes32 _value)
+		external
+		whenBadge(_id)
+		onlyBadgeOwner(_id)
+	{
+		badges[_id].meta[_key] = _value;
+		emit MetaChanged(_id, _key, _value);
+	}
+
+	function drain()
+		external
+		onlyOwner
+	{
+		msg.sender.transfer(address(this).balance);
+	}
+
+	function badge(uint _id)
+		external
+		view
+		whenBadge(_id)
+		returns (address addr, bytes32 name, address owner)
+	{
+		Badge storage t = badges[_id];
+		addr = t.addr;
+		name = t.name;
+		owner = t.owner;
+	}
+
+	function fromAddress(address _addr)
+		external
+		view
+		returns (uint id, bytes32 name, address owner)
+	{
+		id = mapFromAddress[_addr];
+		require(id > 0);
+		id = id - 1;
+		Badge storage b = badges[id];
+		name = b.name;
+		owner = b.owner;
+	}
+
+	function fromName(bytes32 _name)
+		external
+		view
+		returns (uint id, address addr, address owner)
+	{
+		id = mapFromName[_name];
+		require(id > 0);
+		id = id - 1;
+		Badge storage b = badges[id];
+		addr = b.addr;
+		owner = b.owner;
+	}
+
+	function meta(uint _id, bytes32 _key)
+		external
+		view
+		whenBadge(_id)
+		returns (bytes32)
+	{
+		return badges[_id].meta[_key];
 	}
 
 	function registerAs(address _addr, bytes32 _name, address _owner)
@@ -91,100 +186,5 @@ contract BadgeReg is Owned {
 		badgeCount = badgeCount + 1;
 		emit Registered(_name, badges.length - 1, _addr);
 		return true;
-	}
-
-	function unregister(uint _id)
-		public
-		onlyOwner
-		whenBadge(_id)
-	{
-		emit Unregistered(badges[_id].name, _id);
-		delete mapFromAddress[badges[_id].addr];
-		delete mapFromName[badges[_id].name];
-		badges[_id].deleted = true;
-		badgeCount = badgeCount - 1;
-	}
-
-	function setFee(uint _fee)
-		public
-		onlyOwner
-	{
-		fee = _fee;
-	}
-
-	function setAddress(uint _id, address _newAddr)
-		public
-		whenBadge(_id)
-		onlyBadgeOwner(_id)
-		whenAddressFree(_newAddr)
-	{
-		address oldAddr = badges[_id].addr;
-		badges[_id].addr = _newAddr;
-		mapFromAddress[oldAddr] = 0;
-		mapFromAddress[_newAddr] = _id + 1;
-		emit AddressChanged(_id, _newAddr);
-	}
-
-	function setMeta(uint _id, bytes32 _key, bytes32 _value)
-		public
-		whenBadge(_id)
-		onlyBadgeOwner(_id)
-	{
-		badges[_id].meta[_key] = _value;
-		emit MetaChanged(_id, _key, _value);
-	}
-
-	function drain()
-		public
-		onlyOwner
-	{
-		msg.sender.transfer(address(this).balance);
-	}
-
-	function badge(uint _id)
-		public
-		view
-		whenBadge(_id)
-		returns (address addr, bytes32 name, address owner)
-	{
-		Badge storage t = badges[_id];
-		addr = t.addr;
-		name = t.name;
-		owner = t.owner;
-	}
-
-	function fromAddress(address _addr)
-		public
-		view
-		returns (uint id, bytes32 name, address owner)
-	{
-		id = mapFromAddress[_addr];
-		require(id > 0);
-		id = id - 1;
-		Badge storage b = badges[id];
-		name = b.name;
-		owner = b.owner;
-	}
-
-	function fromName(bytes32 _name)
-		public
-		view
-		returns (uint id, address addr, address owner)
-	{
-		id = mapFromName[_name];
-		require(id > 0);
-		id = id - 1;
-		Badge storage b = badges[id];
-		addr = b.addr;
-		owner = b.owner;
-	}
-
-	function meta(uint _id, bytes32 _key)
-		public
-		view
-		whenBadge(_id)
-		returns (bytes32)
-	{
-		return badges[_id].meta[_key];
 	}
 }
