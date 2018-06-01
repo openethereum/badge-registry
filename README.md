@@ -9,3 +9,18 @@
 [coveralls-url]: https://coveralls.io/github/parity-contracts/badge-registry?branch=master
 
 Certify badges to accounts and wallets.
+
+## Getting started
+
+This project uses the [Truffle](http://truffleframework.com/) framework. To install the required
+dependencies run:
+
+```
+yarn install
+```
+
+To run the test suite:
+
+```
+yarn test
+```
